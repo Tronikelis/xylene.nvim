@@ -124,22 +124,22 @@ function File:toggle()
 	end
 end
 
----@param lines? string[]
----@return string[]
-function File:lines(lines)
-	lines = lines or {}
+---@param files? xylene.File[]
+---@return xylene.File[]
+function File:flatten_opened(files)
+	files = files or {}
 
-	table.insert(lines, self:line())
+	table.insert(files, self)
 
 	if self.type == "directory" and not self.opened then
-		return lines
+		return files
 	end
 
-	for _, file in ipairs(self.children) do
-		file:lines(lines)
+	for _, f in ipairs(self.children) do
+		f:flatten_opened(files)
 	end
 
-	return lines
+	return files
 end
 
 function File:line()
@@ -220,21 +220,37 @@ function Renderer:refresh()
 	local opts = vim.bo[self.buf]
 	opts.modifiable = true
 
+	---@type string[]
 	local lines = {}
+	---@type xylene.File[]
+	local files = {}
+
 	for _, file in ipairs(self.files) do
-		for _, line in ipairs(file:lines()) do
-			table.insert(lines, line)
+		for _, l in ipairs(file:flatten_opened()) do
+			table.insert(lines, l:line())
+			table.insert(files, l)
 		end
 	end
 
 	local line_count = vim.api.nvim_buf_line_count(self.buf)
 	vim.api.nvim_buf_set_lines(self.buf, 0, line_count, false, lines)
 
+	for i, f in ipairs(files) do
+		if f.type == "directory" then
+			vim.api.nvim_buf_add_highlight(self.buf, -1, "XyleneDir", i - 1, 0, #lines[i])
+		end
+	end
+
 	opts.modifiable = false
 	opts.modified = false
 end
 
 function M.setup()
+	vim.api.nvim_set_hl(0, "XyleneDir", {
+		fg = "#89B4FB",
+		bold = true,
+	})
+
 	vim.api.nvim_create_user_command("Xylene", function()
 		local buf = vim.api.nvim_create_buf(false, false)
 		local opts = vim.bo[buf]
