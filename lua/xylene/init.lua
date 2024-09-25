@@ -164,6 +164,7 @@ end
 
 ---@class xylene.Renderer
 ---@field buf integer
+---@field ns_id integer
 ---@field files xylene.File[]
 local Renderer = {}
 
@@ -175,6 +176,7 @@ function Renderer:new(dir, buf)
 	local obj = {
 		files = File.dir_to_files(dir),
 		buf = buf,
+		ns_id = vim.api.nvim_create_namespace(""),
 	}
 
 	vim.keymap.set("n", "<cr>", function()
@@ -232,12 +234,12 @@ function Renderer:refresh()
 		end
 	end
 
-	local line_count = vim.api.nvim_buf_line_count(self.buf)
-	vim.api.nvim_buf_set_lines(self.buf, 0, line_count, false, lines)
+	vim.api.nvim_buf_clear_namespace(self.buf, self.ns_id, 0, -1)
+	vim.api.nvim_buf_set_lines(self.buf, 0, -1, false, lines)
 
 	for i, f in ipairs(files) do
 		if f.type == "directory" then
-			vim.api.nvim_buf_add_highlight(self.buf, -1, "XyleneDir", i - 1, 0, #lines[i])
+			vim.api.nvim_buf_add_highlight(self.buf, self.ns_id, "Directory", i - 1, 0, -1)
 		end
 	end
 
@@ -246,11 +248,6 @@ function Renderer:refresh()
 end
 
 function M.setup()
-	vim.api.nvim_set_hl(0, "XyleneDir", {
-		fg = "#89B4FB",
-		bold = true,
-	})
-
 	vim.api.nvim_create_user_command("Xylene", function()
 		local buf = vim.api.nvim_create_buf(false, false)
 		local opts = vim.bo[buf]
