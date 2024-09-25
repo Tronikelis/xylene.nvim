@@ -14,6 +14,7 @@ local File = {}
 ---@param dir string
 ---@return xylene.File[]
 function File.dir_to_files(dir)
+	---@type xylene.File[]
 	local files = {}
 
 	for name, filetype in vim.fs.dir(dir) do
@@ -30,6 +31,13 @@ function File.dir_to_files(dir)
 			})
 		)
 	end
+
+	table.sort(files, function(a, b)
+		return string.lower(a.name) < string.lower(b.name)
+	end)
+	table.sort(files, function(a, b)
+		return a.type < b.type
+	end)
 
 	return files
 end
@@ -187,6 +195,11 @@ function Renderer:click(row, files)
 
 	for _, f in ipairs(files) do
 		if row == 1 then
+			if f.type == "file" then
+				vim.cmd.e(f.path)
+				return
+			end
+
 			f:toggle()
 			self:refresh()
 			return
@@ -230,7 +243,12 @@ function M.setup()
 
 		vim.api.nvim_set_current_buf(buf)
 
-		local renderer = Renderer:new(vim.uv.cwd(), buf)
+		local cwd = vim.uv.cwd()
+		if not cwd then
+			return
+		end
+
+		local renderer = Renderer:new(cwd, buf)
 		renderer:refresh()
 	end, {})
 end
