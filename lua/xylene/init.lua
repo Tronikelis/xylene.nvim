@@ -1,4 +1,14 @@
-local M = {}
+local M = {
+    ---@class xylene.Config
+    ---@field indent integer
+    ---@field sort_names fun(a: xylene.File, b: xylene.File): boolean
+    config = {
+        indent = 4,
+        sort_names = function(a, b)
+            return a.name < b.name
+        end,
+    },
+}
 
 ---@class xylene.File
 ---@field path string
@@ -32,9 +42,7 @@ function File.dir_to_files(dir)
         )
     end
 
-    table.sort(files, function(a, b)
-        return a.name < b.name
-    end)
+    table.sort(files, M.config.sort_names)
     table.sort(files, function(a, b)
         return a.type < b.type
     end)
@@ -155,7 +163,7 @@ function File:line()
         str = str .. "/"
     end
 
-    for _ = 0, (self.depth * 2) - 1 do
+    for _ = 0, (self.depth * M.config.indent) - 1 do
         str = " " .. str
     end
 
@@ -257,7 +265,7 @@ end
 function Renderer:apply_hl(flattened_files, offset)
     for i, f in ipairs(flattened_files) do
         if f.type == "directory" then
-            vim.api.nvim_buf_add_highlight(self.buf, self.ns_id, "Directory", offset + i - 1, 0, -1)
+            vim.api.nvim_buf_add_highlight(self.buf, self.ns_id, "XyleneDir", offset + i - 1, 0, -1)
         end
     end
 end
@@ -281,7 +289,13 @@ function Renderer:refresh()
     end)
 end
 
-function M.setup()
+---comment
+function M.setup(config)
+    config = config or {}
+    M.config = vim.tbl_deep_extend("force", M.config, config)
+
+    vim.api.nvim_set_hl(0, "XyleneDir", { link = "Directory" })
+
     vim.api.nvim_create_user_command("Xylene", function()
         local buf = vim.api.nvim_create_buf(false, false)
         local opts = vim.bo[buf]
