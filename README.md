@@ -10,6 +10,7 @@ Wip file tree plugin inspired by oil.nvim and carbon.nvim
 
 - Minimalism
 - Designed to be used with other FS plugins, I recommend [oil.nvim](https://github.com/stevearc/oil.nvim)
+- Fast, navigating should feel instant
 
 
 ## Features
