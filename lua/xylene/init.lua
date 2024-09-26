@@ -351,7 +351,6 @@ function Renderer:open_from_filepath(filepath, files, line)
     return { nil, 0 }
 end
 
----comment
 function M.setup(config)
     config = config or {}
     M.config = vim.tbl_deep_extend("force", M.config, config)
