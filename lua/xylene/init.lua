@@ -3,8 +3,10 @@ local utils = require("xylene.utils")
 local M = {
     ---@class xylene.Config
     ---@field indent integer
+    ---@field icons boolean
     ---@field sort_names fun(a: xylene.File, b: xylene.File): boolean
     config = {
+        icons = true,
         indent = 4,
         sort_names = function(a, b)
             return a.name < b.name
@@ -19,12 +21,14 @@ local M = {
 ---@field opened boolean
 ---@field depth integer
 ---@field opened_count integer
+---@field icon? string
+---@field icon_hl? string
 ---@field parent? xylene.File
 ---@field children xylene.File[]
 local File = {}
 
 function File:indent_len()
-    return self.depth * M.config.indent - 1
+    return self.depth * M.config.indent
 end
 
 ---@param dir string
@@ -34,9 +38,22 @@ function File.dir_to_files(dir)
     local files = {}
 
     for name, filetype in vim.fs.dir(dir) do
+        ---@type string?, string?
+        local icon, icon_hl
+
+        if package.loaded["nvim-web-devicons"] and M.config.icons then
+            local icons = require("nvim-web-devicons")
+
+            local ext = utils.file_extension(name)
+            icon, icon_hl = icons.get_icon(name, ext, { default = true })
+        end
+
         table.insert(
             files,
             File:new({
+                icon = icon,
+                icon_hl = icon_hl,
+
                 opened_count = 0,
                 depth = 0,
                 name = name,
@@ -169,7 +186,11 @@ function File:line()
         str = str .. "/"
     end
 
-    for _ = 0, self:indent_len() do
+    if self.icon and self.type ~= "directory" then
+        str = self.icon .. " " .. str
+    end
+
+    for _ = 0, self:indent_len() - 1 do
         str = " " .. str
     end
 
@@ -270,8 +291,15 @@ end
 ---@param offset integer
 function Renderer:apply_hl(flattened_files, offset)
     for i, f in ipairs(flattened_files) do
+        local line = offset + i - 1
+
         if f.type == "directory" then
-            vim.api.nvim_buf_add_highlight(self.buf, self.ns_id, "XyleneDir", offset + i - 1, 0, -1)
+            vim.api.nvim_buf_add_highlight(self.buf, self.ns_id, "XyleneDir", line, 0, -1)
+        else
+            if f.icon and f.icon_hl then
+                local start = f:indent_len()
+                vim.api.nvim_buf_add_highlight(self.buf, self.ns_id, f.icon_hl, line, start, start + 1)
+            end
         end
     end
 end
