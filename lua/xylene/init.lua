@@ -1,3 +1,5 @@
+local utils = require("xylene.utils")
+
 local M = {
     ---@class xylene.Config
     ---@field indent integer
@@ -20,6 +22,10 @@ local M = {
 ---@field parent? xylene.File
 ---@field children xylene.File[]
 local File = {}
+
+function File:indent_len()
+    return self.depth * M.config.indent - 1
+end
 
 ---@param dir string
 ---@return xylene.File[]
@@ -163,7 +169,7 @@ function File:line()
         str = str .. "/"
     end
 
-    for _ = 0, (self.depth * M.config.indent) - 1 do
+    for _ = 0, self:indent_len() do
         str = " " .. str
     end
 
@@ -289,6 +295,34 @@ function Renderer:refresh()
     end)
 end
 
+---returns [file: xylene.File?, row: integer]
+---@param filepath string
+---@param files? xylene.File[]
+---@param line? integer
+---@return [xylene.File?, integer]
+function Renderer:open_from_filepath(filepath, files, line)
+    files = files or self.files
+    line = line or 0
+
+    for _, f in ipairs(files) do
+        line = line + 1
+
+        if f.path == filepath then
+            return { f, line }
+        end
+
+        if utils.string_starts_with(filepath, f.path) then
+            if #f.children == 0 then
+                f:open()
+            end
+
+            return self:open_from_filepath(filepath, f.children, line)
+        end
+    end
+
+    return { nil, 0 }
+end
+
 ---comment
 function M.setup(config)
     config = config or {}
@@ -296,22 +330,38 @@ function M.setup(config)
 
     vim.api.nvim_set_hl(0, "XyleneDir", { link = "Directory" })
 
-    vim.api.nvim_create_user_command("Xylene", function()
+    vim.api.nvim_create_user_command("Xylene", function(args)
         local buf = vim.api.nvim_create_buf(false, false)
+
         local opts = vim.bo[buf]
-
         opts.filetype = "xylene"
-
-        vim.api.nvim_set_current_buf(buf)
 
         local cwd = vim.uv.cwd()
         if not cwd then
             return
         end
 
+        local filepath = vim.fn.expand("%:p")
+        vim.api.nvim_set_current_buf(buf)
+
         local renderer = Renderer:new(cwd, buf)
-        renderer:refresh()
-    end, {})
+
+        if args.bang then
+            local from_filepath = renderer:open_from_filepath(filepath)
+
+            renderer:refresh()
+
+            if not from_filepath[1] then
+                return
+            end
+
+            vim.api.nvim_win_set_cursor(0, { from_filepath[2], from_filepath[1]:indent_len() })
+        else
+            renderer:refresh()
+        end
+    end, {
+        bang = true,
+    })
 end
 
 return M
