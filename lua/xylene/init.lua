@@ -33,7 +33,7 @@ function File.dir_to_files(dir)
     end
 
     table.sort(files, function(a, b)
-        return string.lower(a.name) < string.lower(b.name)
+        return a.name < b.name
     end)
     table.sort(files, function(a, b)
         return a.type < b.type
@@ -190,38 +190,79 @@ function Renderer:new(dir, buf)
     return obj
 end
 
+---@param fn fun()
+function Renderer:with_modifiable(fn)
+    local opts = vim.bo[self.buf]
+
+    opts.modifiable = true
+    fn()
+    opts.modifiable = false
+    opts.modified = false
+end
+
+---@param dir xylene.File
 ---@param row integer
----@param files? xylene.File[]
-function Renderer:click(row, files)
-    files = files or self.files
+function Renderer:toggle_and_render_dir(dir, row)
+    local from = row - 1
+    local to = dir.opened_count + 1 + from
+    dir:toggle()
+
+    local lines = {}
+    local files = dir:flatten_opened()
 
     for _, f in ipairs(files) do
-        if row == 1 then
+        table.insert(lines, f:line())
+    end
+
+    self:with_modifiable(function()
+        vim.api.nvim_buf_set_lines(self.buf, from, to, true, lines)
+        self:apply_hl(files, from)
+    end)
+end
+
+---@param row integer
+---@param files? xylene.File[]
+---@param row_needle? integer
+function Renderer:click(row, row_needle, files)
+    files = files or self.files
+    row_needle = row_needle or row
+
+    --- this could be a perf bottleneck
+    --- as worst case scenario it loops through the whole root files
+
+    for _, f in ipairs(files) do
+        if row_needle == 1 then
             if f.type == "file" then
                 vim.cmd.e(f.path)
                 return
             end
 
-            f:toggle()
-            self:refresh()
+            self:toggle_and_render_dir(f, row)
             return
         end
 
-        row = row - 1
+        row_needle = row_needle - 1
 
-        if row <= f.opened_count then
-            self:click(row, f.children)
+        if row_needle <= f.opened_count then
+            self:click(row, row_needle, f.children)
             return
         end
 
-        row = row - f.opened_count
+        row_needle = row_needle - f.opened_count
+    end
+end
+
+---@param flattened_files xylene.File[]
+---@param offset integer
+function Renderer:apply_hl(flattened_files, offset)
+    for i, f in ipairs(flattened_files) do
+        if f.type == "directory" then
+            vim.api.nvim_buf_add_highlight(self.buf, self.ns_id, "Directory", offset + i - 1, 0, -1)
+        end
     end
 end
 
 function Renderer:refresh()
-    local opts = vim.bo[self.buf]
-    opts.modifiable = true
-
     ---@type string[]
     local lines = {}
     ---@type xylene.File[]
@@ -234,17 +275,10 @@ function Renderer:refresh()
         end
     end
 
-    vim.api.nvim_buf_clear_namespace(self.buf, self.ns_id, 0, -1)
-    vim.api.nvim_buf_set_lines(self.buf, 0, -1, false, lines)
-
-    for i, f in ipairs(files) do
-        if f.type == "directory" then
-            vim.api.nvim_buf_add_highlight(self.buf, self.ns_id, "Directory", i - 1, 0, -1)
-        end
-    end
-
-    opts.modifiable = false
-    opts.modified = false
+    self:with_modifiable(function()
+        vim.api.nvim_buf_set_lines(self.buf, 0, -1, false, lines)
+        self:apply_hl(files, 0)
+    end)
 end
 
 function M.setup()
