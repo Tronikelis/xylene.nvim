@@ -11,3 +11,9 @@ Wip file tree plugin inspired by oil.nvim and carbon.nvim
 - Minimalism
 - Designed to be used with other FS plugins, I recommend [oil.nvim](https://github.com/stevearc/oil.nvim)
 
+
+## Features
+- [x] Navigating like a buffer
+- [] Incremental updates
+- [] `Xylene!` opens xylene with the current file already opened
+- [] Search for a directory with telescope and open it
