@@ -89,7 +89,7 @@ Open currently hovering dir / file with oil.nvim
 require("xylene").setup({
   on_attach = function(renderer)
     vim.keymap.set("n", "<c-cr>", function()
-      local row = table.unpack(vim.api.nvim_win_get_cursor(0))
+      local row = vim.api.nvim_win_get_cursor(0)[1]
 
       local file = renderer:find_file(row)
       if not file then

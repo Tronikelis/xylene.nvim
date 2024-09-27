@@ -239,7 +239,7 @@ function Renderer:new(dir, buf)
     }
 
     vim.keymap.set("n", M.config.keymaps.enter, function()
-        local row = unpack(vim.api.nvim_win_get_cursor(0))
+        local row = vim.api.nvim_win_get_cursor(0)[1]
         obj:click(row)
     end, { buffer = buf })
 
