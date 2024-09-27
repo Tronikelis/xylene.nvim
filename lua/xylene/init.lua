@@ -152,7 +152,7 @@ function File:open()
     end)
 end
 
----@param fn fun(file: xylene.File)
+---@param fn fun(parent: xylene.File)
 function File:traverse_parent(fn)
     local parent = self.parent
     while parent do
@@ -239,7 +239,7 @@ function Renderer:new(dir, buf)
     }
 
     vim.keymap.set("n", M.config.keymaps.enter, function()
-        local row = table.unpack(vim.api.nvim_win_get_cursor(0))
+        local row = unpack(vim.api.nvim_win_get_cursor(0))
         obj:click(row)
     end, { buffer = buf })
 
@@ -259,24 +259,39 @@ function Renderer:with_modifiable(fn)
     opts.modified = false
 end
 
----@param dir xylene.File
----@param row integer
-function Renderer:toggle_and_render_dir(dir, row)
-    local from = row - 1
-    local to = dir.opened_count + 1 + from
-    dir:toggle()
+---comment returns pre from, to
+---@param file xylene.File
+---@param line integer
+---@return integer, integer
+function Renderer:pre_render_file(file, line)
+    local from = line - 1
+    local to = file.opened_count + 1 + from
+    return from, to
+end
 
+---@param file xylene.File
+---@param pre_from integer
+---@param pre_to integer
+function Renderer:render_file(file, pre_from, pre_to)
     local lines = {}
-    local files = dir:flatten_opened()
+    local files = file:flatten_opened()
 
     for _, f in ipairs(files) do
         table.insert(lines, f:line())
     end
 
     self:with_modifiable(function()
-        vim.api.nvim_buf_set_lines(self.buf, from, to, true, lines)
-        self:apply_hl(files, from)
+        vim.api.nvim_buf_set_lines(self.buf, pre_from, pre_to, true, lines)
+        self:apply_hl(files, pre_from)
     end)
+end
+
+---@param file xylene.File
+---@param row integer
+function Renderer:toggle_and_render(file, row)
+    local from, to = self:pre_render_file(file, row)
+    file:toggle()
+    self:render_file(file, from, to)
 end
 
 ---@param line integer
@@ -317,7 +332,7 @@ function Renderer:click(row)
         return
     end
 
-    self:toggle_and_render_dir(file, row)
+    self:toggle_and_render(file, row)
 end
 
 ---@param flattened_files xylene.File[]
@@ -375,6 +390,12 @@ function Renderer:open_from_filepath(filepath, files, line)
         if utils.string_starts_with(filepath, f.path) then
             if #f.children == 0 then
                 f:open()
+
+                --- extra if needed for compact open case
+                --- the path could change to the correct one
+                if f.path == filepath then
+                    return { f, line }
+                end
             end
 
             return self:open_from_filepath(filepath, f.children, line)
