@@ -21,3 +21,28 @@ Wip file tree plugin inspired by oil.nvim and carbon.nvim
 - [x] Icons
 - [ ] Search for a directory with telescope and open it
 - [ ] Detect external file changes
+
+## Usage
+
+While it's still missing some features listed above, I would be happy if you want to
+try it out
+
+Install with your favorite package manager and call the setup function
+
+Default options are listed below
+
+```lua
+require("xylene").setup({
+    icons = true,
+    indent = 4,
+    sort_names = function(a, b)
+        return a.name < b.name
+    end,
+})
+```
+
+### Keymaps
+
+Current (not changeable yet) keymaps
+
+- `<cr>` toggle dir / enter file
