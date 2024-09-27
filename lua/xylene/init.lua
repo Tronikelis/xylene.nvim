@@ -5,6 +5,7 @@ local M = {
     ---@field indent integer
     ---@field icons xylene.Config.Icons
     ---@field sort_names fun(a: xylene.File, b: xylene.File): boolean
+    ---@field skip fun(name: string, filetype: string): boolean
     config = {
         ---@class xylene.Config.Icons
         ---@field files boolean
@@ -18,6 +19,9 @@ local M = {
         indent = 4,
         sort_names = function(a, b)
             return a.name < b.name
+        end,
+        skip = function(name, filetype)
+            return name == ".git"
         end,
     },
 }
@@ -46,31 +50,33 @@ function File.dir_to_files(dir)
     local files = {}
 
     for name, filetype in vim.fs.dir(dir) do
-        ---@type string?, string?
-        local icon, icon_hl
+        if not M.config.skip(name, filetype) then
+            ---@type string?, string?
+            local icon, icon_hl
 
-        if package.loaded["nvim-web-devicons"] and M.config.icons.files then
-            local icons = require("nvim-web-devicons")
+            if package.loaded["nvim-web-devicons"] and M.config.icons.files then
+                local icons = require("nvim-web-devicons")
 
-            local ext = utils.file_extension(name)
-            icon, icon_hl = icons.get_icon(name, ext, { default = true })
+                local ext = utils.file_extension(name)
+                icon, icon_hl = icons.get_icon(name, ext, { default = true })
+            end
+
+            table.insert(
+                files,
+                File:new({
+                    icon = icon,
+                    icon_hl = icon_hl,
+
+                    opened_count = 0,
+                    depth = 0,
+                    name = name,
+                    path = vim.fs.joinpath(dir, name),
+                    type = filetype,
+                    opened = false,
+                    children = {},
+                })
+            )
         end
-
-        table.insert(
-            files,
-            File:new({
-                icon = icon,
-                icon_hl = icon_hl,
-
-                opened_count = 0,
-                depth = 0,
-                name = name,
-                path = vim.fs.joinpath(dir, name),
-                type = filetype,
-                opened = false,
-                children = {},
-            })
-        )
     end
 
     table.sort(files, M.config.sort_names)

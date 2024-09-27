@@ -53,6 +53,9 @@ require("xylene").setup({
   sort_names = function(a, b)
     return a.name < b.name
   end,
+  skip = function(name, filetype)
+    return name == ".git"
+  end,
 })
 ```
 
