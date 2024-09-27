@@ -28,7 +28,9 @@ Wip file tree plugin inspired by oil.nvim and carbon.nvim
 - [x] Incremental rerendering of tree
 - [x] `Xylene!` opens xylene with the current file already opened
 - [x] Icons
+- [ ] Symlink support
 - [ ] Search for a directory with telescope and open it
+- [ ] Execute any code with files / directories (for example open currently hovering directory in oil.nvim)
 - [ ] Detect external file changes
 
 ## Usage
