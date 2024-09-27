@@ -6,6 +6,15 @@ Wip file tree plugin inspired by oil.nvim and carbon.nvim
 
 ![image](https://github.com/user-attachments/assets/8a51422d-f508-46fb-9831-f1cfc3c72b21)
 
+<!--toc:start-->
+- [xylene.nvim](#xylenenvim)
+  - [Philosophy](#philosophy)
+  - [Features](#features)
+  - [Usage](#usage)
+    - [Keymaps](#keymaps)
+    - [User commands](#user-commands)
+<!--toc:end-->
+
 ## Philosophy
 
 - Minimalism
@@ -46,3 +55,8 @@ require("xylene").setup({
 Current (not changeable yet) keymaps
 
 - `<cr>` toggle dir / enter file
+
+### User commands
+
+- `Xylene` open a new xylene buffer with `cwd` as the root
+- `Xylene!` same as `Xylene` plus recursively opens directories to make your file seen
