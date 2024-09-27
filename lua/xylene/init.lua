@@ -3,7 +3,10 @@ local utils = require("xylene.utils")
 local M = {
     ---@class xylene.Config
     ---@field indent integer
+    ---
+    ---@field keymaps xylene.Config.Keymaps
     ---@field icons xylene.Config.Icons
+    ---
     ---@field sort_names fun(a: xylene.File, b: xylene.File): boolean
     ---@field on_attach fun(renderer: xylene.Renderer)
     ---@field skip fun(name: string, filetype: string): boolean
@@ -16,6 +19,11 @@ local M = {
             files = true,
             dir_open = "  ",
             dir_close = "  ",
+        },
+        ---@class xylene.Config.Keymaps
+        ---@field enter string
+        keymaps = {
+            enter = "<cr>",
         },
         indent = 4,
         sort_names = function(a, b)
@@ -230,7 +238,7 @@ function Renderer:new(dir, buf)
         ns_id = vim.api.nvim_create_namespace(""),
     }
 
-    vim.keymap.set("n", "<cr>", function()
+    vim.keymap.set("n", M.config.keymaps.enter, function()
         local row = table.unpack(vim.api.nvim_win_get_cursor(0))
         obj:click(row)
     end, { buffer = buf })

@@ -54,6 +54,9 @@ require("xylene").setup({
     dir_open = "  ",
     dir_close = "  ",
   },
+  keymaps = {
+    enter = "<cr>",
+  },
   indent = 4,
   sort_names = function(a, b)
     return a.name < b.name
@@ -61,12 +64,11 @@ require("xylene").setup({
   skip = function(name, filetype)
     return name == ".git"
   end,
+  on_attach = function(renderer) end,
 })
 ```
 
 ### Keymaps
-
-Current (not changeable yet) keymaps
 
 - `<cr>` toggle dir / enter file
 
