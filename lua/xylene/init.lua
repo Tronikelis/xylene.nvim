@@ -3,10 +3,18 @@ local utils = require("xylene.utils")
 local M = {
     ---@class xylene.Config
     ---@field indent integer
-    ---@field icons boolean
+    ---@field icons xylene.Config.Icons
     ---@field sort_names fun(a: xylene.File, b: xylene.File): boolean
     config = {
-        icons = true,
+        ---@class xylene.Config.Icons
+        ---@field files boolean
+        ---@field dir_open string
+        ---@field dir_close string
+        icons = {
+            files = true,
+            dir_open = "  ",
+            dir_close = "  ",
+        },
         indent = 4,
         sort_names = function(a, b)
             return a.name < b.name
@@ -41,7 +49,7 @@ function File.dir_to_files(dir)
         ---@type string?, string?
         local icon, icon_hl
 
-        if package.loaded["nvim-web-devicons"] and M.config.icons then
+        if package.loaded["nvim-web-devicons"] and M.config.icons.files then
             local icons = require("nvim-web-devicons")
 
             local ext = utils.file_extension(name)
@@ -178,9 +186,9 @@ function File:line()
 
     if self.type == "directory" then
         if self.opened then
-            str = "- " .. str
+            str = M.config.icons.dir_open .. str
         else
-            str = "+ " .. str
+            str = M.config.icons.dir_close .. str
         end
 
         str = str .. "/"

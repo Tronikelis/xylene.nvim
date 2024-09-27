@@ -42,11 +42,15 @@ Default options are listed below
 
 ```lua
 require("xylene").setup({
-    icons = true,
-    indent = 4,
-    sort_names = function(a, b)
-        return a.name < b.name
-    end,
+  icons = {
+    files = true,
+    dir_open = "  ",
+    dir_close = "  ",
+  },
+  indent = 4,
+  sort_names = function(a, b)
+    return a.name < b.name
+  end,
 })
 ```
 
