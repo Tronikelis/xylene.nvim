@@ -13,6 +13,11 @@ Wip file tree plugin inspired by oil.nvim and carbon.nvim
   - [Usage](#usage)
     - [Keymaps](#keymaps)
     - [User commands](#user-commands)
+    - [Recipes](#recipes)
+  - [API](#api)
+    - [xylene.File](#xylenefile)
+    - [xylene.Renderer](#xylenerenderer)
+    - [xylene.Config](#xyleneconfig)
 <!--toc:end-->
 
 ## Philosophy
@@ -69,3 +74,38 @@ Current (not changeable yet) keymaps
 
 - `Xylene` open a new xylene buffer with `cwd` as the root
 - `Xylene!` same as `Xylene` plus recursively opens directories to make your file seen
+
+### Recipes
+
+Open currently hovering dir / file with oil.nvim
+
+```lua
+require("xylene").setup({
+  on_attach = function(renderer)
+    vim.keymap.set("n", "<c-cr>", function()
+      local row = table.unpack(vim.api.nvim_win_get_cursor(0))
+
+      local file = renderer:find_file(row)
+      if not file then
+        return
+      end
+
+      require("oil").open(file.path)
+    end, { buffer = renderer.buf })
+  end,
+})
+```
+
+## API
+
+### xylene.File
+
+todo
+
+### xylene.Renderer
+
+todo
+
+### xylene.Config
+
+todo

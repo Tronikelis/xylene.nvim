@@ -5,6 +5,7 @@ local M = {
     ---@field indent integer
     ---@field icons xylene.Config.Icons
     ---@field sort_names fun(a: xylene.File, b: xylene.File): boolean
+    ---@field on_attach fun(renderer: xylene.Renderer)
     ---@field skip fun(name: string, filetype: string): boolean
     config = {
         ---@class xylene.Config.Icons
@@ -23,6 +24,7 @@ local M = {
         skip = function(name, filetype)
             return name == ".git"
         end,
+        on_attach = function(renderer) end,
     },
 }
 
@@ -269,36 +271,45 @@ function Renderer:toggle_and_render_dir(dir, row)
     end)
 end
 
----@param row integer
+---@param line integer
+---@param line_needle? integer
 ---@param files? xylene.File[]
----@param row_needle? integer
-function Renderer:click(row, row_needle, files)
+---@return xylene.File?
+function Renderer:find_file(line, line_needle, files)
     files = files or self.files
-    row_needle = row_needle or row
+    line_needle = line_needle or line
 
     --- this could be a perf bottleneck
     --- as worst case scenario it loops through the whole root files
 
     for _, f in ipairs(files) do
-        if row_needle == 1 then
-            if f.type == "file" then
-                vim.cmd.e(f.path)
-                return
-            end
-
-            self:toggle_and_render_dir(f, row)
-            return
+        if line_needle == 1 then
+            return f
         end
 
-        row_needle = row_needle - 1
+        line_needle = line_needle - 1
 
-        if row_needle <= f.opened_count then
-            self:click(row, row_needle, f.children)
-            return
+        if line_needle <= f.opened_count then
+            return self:find_file(line, line_needle, f.children)
         end
 
-        row_needle = row_needle - f.opened_count
+        line_needle = line_needle - f.opened_count
     end
+end
+
+---@param row integer
+function Renderer:click(row)
+    local file = self:find_file(row)
+    if not file then
+        return
+    end
+
+    if file.type == "file" then
+        vim.cmd.e(file.path)
+        return
+    end
+
+    self:toggle_and_render_dir(file, row)
 end
 
 ---@param flattened_files xylene.File[]
@@ -400,6 +411,8 @@ function M.setup(config)
         else
             renderer:refresh()
         end
+
+        M.config.on_attach(renderer)
     end, {
         bang = true,
     })
