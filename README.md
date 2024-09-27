@@ -4,7 +4,7 @@
 
 Wip file tree plugin inspired by oil.nvim and carbon.nvim
 
-![image](https://github.com/user-attachments/assets/8a51422d-f508-46fb-9831-f1cfc3c72b21)
+![image](https://github.com/user-attachments/assets/25a06234-67c3-479b-bb95-0a7348219bea)
 
 <!--toc:start-->
 - [xylene.nvim](#xylenenvim)
