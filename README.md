@@ -41,7 +41,6 @@ such as move/copy/rename ... etc
 - [x] Icons
 - [x] Execute any code with files / directories (for example open currently hovering directory in oil.nvim)
 - [ ] Symlink support
-- [ ] Search for a directory with telescope and open it
 - [ ] Detect external file changes
 
 ## Usage
