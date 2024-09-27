@@ -375,7 +375,7 @@ end
 ---@param filepath string
 ---@param files? xylene.File[]
 ---@param line? integer
----@return [xylene.File?, integer]
+---@return xylene.File?, integer
 function Renderer:open_from_filepath(filepath, files, line)
     files = files or self.files
     line = line or 0
@@ -384,7 +384,7 @@ function Renderer:open_from_filepath(filepath, files, line)
         line = line + 1
 
         if f.path == filepath then
-            return { f, line }
+            return f, line
         end
 
         if utils.string_starts_with(filepath, f.path) then
@@ -394,7 +394,7 @@ function Renderer:open_from_filepath(filepath, files, line)
                 --- extra if needed for compact open case
                 --- the path could change to the correct one
                 if f.path == filepath then
-                    return { f, line }
+                    return f, line
                 end
             end
 
@@ -402,7 +402,7 @@ function Renderer:open_from_filepath(filepath, files, line)
         end
     end
 
-    return { nil, 0 }
+    return nil, 0
 end
 
 function M.setup(config)
@@ -428,15 +428,15 @@ function M.setup(config)
         local renderer = Renderer:new(cwd, buf)
 
         if args.bang then
-            local from_filepath = renderer:open_from_filepath(filepath)
+            local file, line = renderer:open_from_filepath(filepath)
 
             renderer:refresh()
 
-            if not from_filepath[1] then
+            if not file then
                 return
             end
 
-            vim.api.nvim_win_set_cursor(0, { from_filepath[2], from_filepath[1]:indent_len() })
+            vim.api.nvim_win_set_cursor(0, { line, file:indent_len() })
         else
             renderer:refresh()
         end
