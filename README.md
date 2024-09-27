@@ -28,6 +28,10 @@ Wip file tree plugin inspired by oil.nvim and carbon.nvim
 
 
 ## Features
+
+I want to preface that this file tree right now does not have plans to support file operations
+such as move/copy/rename ... etc
+
 - [x] Navigating like a buffer
 - [x] Subsequent empty directories are flattened into one line
 - [x] Incremental rerendering of tree
