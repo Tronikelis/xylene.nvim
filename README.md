@@ -86,6 +86,18 @@ require("xylene").setup({
 
 #### Open currently hovering dir with oil.nvim
 
+<details>
+  <summary>video</summary>
+
+
+
+
+https://github.com/user-attachments/assets/a66e005a-ce18-49ec-af07-8aeafe0873a6
+
+
+  
+</details>
+
 ```lua
 require("xylene").setup({
   on_attach = function(renderer)
@@ -104,6 +116,17 @@ require("xylene").setup({
 ```
 
 #### Search and open directory with telescope
+
+<details>
+  <summary>video</summary>
+
+
+
+https://github.com/user-attachments/assets/d96fbe8f-625a-4105-bf0a-022e307e8acd
+
+
+  
+</details>
 
 Right now a bit too much low level for my likings, I'll probably make this more concise in the future
 with new apis
