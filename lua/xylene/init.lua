@@ -400,6 +400,8 @@ function Renderer:open_from_filepath(filepath, files, line)
 
             return self:open_from_filepath(filepath, f.children, line)
         end
+
+        line = line + f.opened_count
     end
 
     return nil, 0

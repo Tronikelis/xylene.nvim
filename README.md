@@ -124,20 +124,25 @@ require("xylene").setup({
             actions.close(prompt_bufnr)
 
             local path = vim.fs.joinpath(entry.cwd, entry[1])
-            -- remove trailing /
-            path = path:sub(1, -2)
+            if path:sub(#path, #path) == "/" then
+              -- remove trailing /
+              path = path:sub(1, -2)
+            end
 
             local utils = require("xylene.utils")
 
             --- find the file that will be rendered
             --- in this case the root file
-            local root, root_row
-            for i, f in ipairs(renderer.files) do
+            local root, root_row = nil, 0
+            for _, f in ipairs(renderer.files) do
+              root_row = root_row + 1
+
               if utils.string_starts_with(path, f.path) then
-                root_row = i
                 root = f
                 break
               end
+
+              root_row = root_row + f.opened_count
             end
 
             local pre_from, pre_to = renderer:pre_render_file(root, root_row)
