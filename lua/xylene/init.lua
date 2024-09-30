@@ -224,6 +224,7 @@ end
 ---@class xylene.Renderer
 ---@field buf integer
 ---@field ns_id integer
+---@field wd string
 ---@field files xylene.File[]
 local Renderer = {}
 
@@ -233,6 +234,7 @@ local Renderer = {}
 function Renderer:new(dir, buf)
     ---@type xylene.Renderer
     local obj = {
+        wd = dir,
         files = File.dir_to_files(dir),
         buf = buf,
         ns_id = vim.api.nvim_create_namespace(""),
@@ -242,6 +244,8 @@ function Renderer:new(dir, buf)
         local row = vim.api.nvim_win_get_cursor(0)[1]
         obj:click(row)
     end, { buffer = buf })
+
+    vim.api.nvim_buf_set_name(obj.buf, vim.fs.joinpath("xylene:", obj.wd))
 
     setmetatable(obj, self)
     self.__index = self
