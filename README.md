@@ -2,7 +2,7 @@
 
 *For that one time where you need to explore your project's architecture*
 
-Wip file tree plugin inspired by oil.nvim and carbon.nvim
+Semi WIP file tree plugin inspired by oil.nvim and carbon.nvim
 
 ![image](https://github.com/user-attachments/assets/25a06234-67c3-479b-bb95-0a7348219bea)
 
@@ -95,7 +95,7 @@ require("xylene").setup({
 https://github.com/user-attachments/assets/a66e005a-ce18-49ec-af07-8aeafe0873a6
 
 
-  
+
 </details>
 
 ```lua
@@ -125,7 +125,7 @@ require("xylene").setup({
 https://github.com/user-attachments/assets/d96fbe8f-625a-4105-bf0a-022e307e8acd
 
 
-  
+
 </details>
 
 Right now a bit too much low level for my likings, I'll probably make this more concise in the future
